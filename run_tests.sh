@@ -9,6 +9,15 @@ if [[ -z "${RUST_BACKTRACE}" ]]; then
 fi
 echo "RUST_BACKTRACE is set to ${RUST_BACKTRACE}\n"
 
+# Produce the test executable
+cargo test
+
+test_exe=$(find target/debug/deps -perm +111 -type f)
+echo $test_exe
+
+agrs="test_aggregate --ignored --test-threads=1"
+lldb --batch --one-line run --source-on-crash dump.txt $test_exe -- $agrs
+
 # Run tests in the sub crate
 # Run the tests by `cargo * -p <SUB_CRATE>` if it's possible. By doing so, the duplicate compiling
 # between this crate and the <SUB_CRATE> can be saved. The compiling for <SUB_CRATE> can be reused
@@ -40,13 +49,13 @@ echo "RUST_BACKTRACE is set to ${RUST_BACKTRACE}\n"
 # Regular Tests
 # cargo test --verbose
 # cargo test test_configure_output -- --ignored
-round=1
-while [ $round -le 100 ]
-do
-    echo "Test round $round\n"
-    cargo test test_aggregate -- --ignored --test-threads=1
-    round=$(( $round + 1 ))
-done
+# round=1
+# while [ $round -le 100 ]
+# do
+#     echo "Test round $round\n"
+#     cargo test test_aggregate -- --ignored --test-threads=1
+#     round=$(( $round + 1 ))
+# done
 
 # Parallel Tests
 # cargo test test_parallel -- --ignored --nocapture --test-threads=1
