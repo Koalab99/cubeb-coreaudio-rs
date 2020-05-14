@@ -10,12 +10,20 @@ fi
 echo "RUST_BACKTRACE is set to ${RUST_BACKTRACE}\n"
 
 # Produce the test executable
-cargo test
+cargo test --no-run
 
 test_exe=$(find target/debug/deps -perm +111 -type f)
-echo $test_exe
+echo "Test executable is: $test_exe"
 
+# Regular test
+lldb --batch --one-line run --source-on-crash dump.txt $test_exe
+
+# aggregate test
 agrs="test_aggregate --ignored --test-threads=1"
+lldb --batch --one-line run --source-on-crash dump.txt $test_exe -- $agrs
+
+# specific test
+agrs="test_aggregate_activate_clock_drift_compensation_for_a_blank_aggregate_device --ignored --test-threads=1"
 lldb --batch --one-line run --source-on-crash dump.txt $test_exe -- $agrs
 
 # Run tests in the sub crate
