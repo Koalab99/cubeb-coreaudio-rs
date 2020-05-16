@@ -1,3 +1,4 @@
+sudo: required
 language: rust
 rust:
   - stable
@@ -16,6 +17,14 @@ script:
   - cargo build --verbose
   - sh run_tests.sh
   - sh run_sanitizers.sh
+after_failure:
+  - ls -lat $HOME/Library/Logs/DiagnosticReports/
+  - find $HOME/Library/Logs/DiagnosticReports
+    -type f
+    -name '*.crash'
+    -exec printf travis_fold":start:crashlog\n\033[31;1m%s\033[0m\n" {} \;
+    -exec head -750 {} \;
+    -exec echo travis_fold":"end:crashlog \; || true
 jobs:
   allow_failures:
     - rust: nightly
